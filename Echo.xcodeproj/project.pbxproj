@@ -1,0 +1,551 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E1000000000000000000001E /* PermissionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000020 /* PermissionHelper.swift */; };
+		E1000000000000000000001F /* UserNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000021 /* UserNotificationService.swift */; };
+		E10000000000000000000020 /* MenuBarIconController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000022 /* MenuBarIconController.swift */; };
+		E10000000000000000000021 /* SystemAudioCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000023 /* SystemAudioCaptureService.swift */; };
+		E10000000000000000000001 /* EchoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* EchoApp.swift */; };
+		E10000000000000000000002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000002 /* AppState.swift */; };
+		E10000000000000000000003 /* EchoTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000003 /* EchoTheme.swift */; };
+		E10000000000000000000004 /* Meeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000004 /* Meeting.swift */; };
+		E10000000000000000000006 /* WaveformIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000006 /* WaveformIcon.swift */; };
+		E10000000000000000000007 /* RecordingDot.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000007 /* RecordingDot.swift */; };
+		E10000000000000000000008 /* TrafficLights.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000008 /* TrafficLights.swift */; };
+		E10000000000000000000009 /* MenuBarDropdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000009 /* MenuBarDropdownView.swift */; };
+		E1000000000000000000000A /* FloatingPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000000A /* FloatingPanelView.swift */; };
+		E1000000000000000000000B /* HistoryWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000000B /* HistoryWindowView.swift */; };
+		E1000000000000000000000C /* MeetingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000000C /* MeetingRowView.swift */; };
+		E1000000000000000000000D /* MeetingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000000D /* MeetingDetailView.swift */; };
+		E1000000000000000000000E /* DesignCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000000E /* DesignCatalogView.swift */; };
+		E1000000000000000000000F /* FloatingPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000000F /* FloatingPanelController.swift */; };
+		E10000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000010 /* Assets.xcassets */; };
+		E10000000000000000000011 /* EchoSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000013 /* EchoSchema.swift */; };
+		E10000000000000000000012 /* MeetingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000014 /* MeetingStore.swift */; };
+		E10000000000000000000013 /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000015 /* TranscriptionService.swift */; };
+		E10000000000000000000014 /* MeetingDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000016 /* MeetingDetector.swift */; };
+		E10000000000000000000015 /* SummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000017 /* SummaryService.swift */; };
+		E10000000000000000000016 /* NotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000018 /* NotionService.swift */; };
+		E10000000000000000000017 /* GlobalShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000019 /* GlobalShortcutManager.swift */; };
+		E1000000000000000000001D /* MeetingURLDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000024 /* MeetingURLDetector.swift */; };
+		E10000000000000000000022 /* MeetingExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000025 /* MeetingExportService.swift */; };
+		E10000000000000000000024 /* Bundle+Echo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000026 /* Bundle+Echo.swift */; };
+		E10000000000000000000018 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001A /* KeychainHelper.swift */; };
+		E10000000000000000000019 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001B /* SettingsStore.swift */; };
+		E1000000000000000000001A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001C /* SettingsView.swift */; };
+		E1000000000000000000001B /* AppLaunchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001D /* AppLaunchCoordinator.swift */; };
+		E1000000000000000000001C /* MenuBarLaunchLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001E /* MenuBarLaunchLabel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		E20000000000000000000001 /* EchoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoApp.swift; sourceTree = "<group>"; };
+		E20000000000000000000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		E20000000000000000000003 /* EchoTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoTheme.swift; sourceTree = "<group>"; };
+		E20000000000000000000004 /* Meeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meeting.swift; sourceTree = "<group>"; };
+		E20000000000000000000006 /* WaveformIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformIcon.swift; sourceTree = "<group>"; };
+		E20000000000000000000007 /* RecordingDot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDot.swift; sourceTree = "<group>"; };
+		E20000000000000000000008 /* TrafficLights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficLights.swift; sourceTree = "<group>"; };
+		E20000000000000000000009 /* MenuBarDropdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarDropdownView.swift; sourceTree = "<group>"; };
+		E2000000000000000000000A /* FloatingPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanelView.swift; sourceTree = "<group>"; };
+		E2000000000000000000000B /* HistoryWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryWindowView.swift; sourceTree = "<group>"; };
+		E2000000000000000000000C /* MeetingRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingRowView.swift; sourceTree = "<group>"; };
+		E2000000000000000000000D /* MeetingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingDetailView.swift; sourceTree = "<group>"; };
+		E2000000000000000000000E /* DesignCatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignCatalogView.swift; sourceTree = "<group>"; };
+		E2000000000000000000000F /* FloatingPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanelController.swift; sourceTree = "<group>"; };
+		E20000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E20000000000000000000011 /* Echo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Echo.entitlements; sourceTree = "<group>"; };
+		E20000000000000000000012 /* Echo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Echo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E20000000000000000000013 /* EchoSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoSchema.swift; sourceTree = "<group>"; };
+		E20000000000000000000014 /* MeetingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingStore.swift; sourceTree = "<group>"; };
+		E20000000000000000000015 /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
+		E20000000000000000000016 /* MeetingDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingDetector.swift; sourceTree = "<group>"; };
+		E20000000000000000000017 /* SummaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryService.swift; sourceTree = "<group>"; };
+		E20000000000000000000018 /* NotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionService.swift; sourceTree = "<group>"; };
+		E20000000000000000000019 /* GlobalShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcutManager.swift; sourceTree = "<group>"; };
+		E2000000000000000000001A /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		E2000000000000000000001B /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		E2000000000000000000001C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E2000000000000000000001D /* AppLaunchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchCoordinator.swift; sourceTree = "<group>"; };
+		E2000000000000000000001E /* MenuBarLaunchLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarLaunchLabel.swift; sourceTree = "<group>"; };
+		E20000000000000000000024 /* MeetingURLDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingURLDetector.swift; sourceTree = "<group>"; };
+		E20000000000000000000025 /* MeetingExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingExportService.swift; sourceTree = "<group>"; };
+		E20000000000000000000026 /* Bundle+Echo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Echo.swift"; sourceTree = "<group>"; };
+		E20000000000000000000020 /* PermissionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionHelper.swift; sourceTree = "<group>"; };
+		E20000000000000000000021 /* UserNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationService.swift; sourceTree = "<group>"; };
+		E20000000000000000000022 /* MenuBarIconController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIconController.swift; sourceTree = "<group>"; };
+		E20000000000000000000023 /* SystemAudioCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCaptureService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E40000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				E40000000000000000000002 /* Echo */,
+				E40000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E40000000000000000000002 /* Echo */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000001 /* EchoApp.swift */,
+				E20000000000000000000002 /* AppState.swift */,
+				E40000000000000000000004 /* Theme */,
+				E40000000000000000000005 /* Models */,
+				E4000000000000000000000D /* Persistence */,
+				E4000000000000000000000E /* Services */,
+				E4000000000000000000000F /* Settings */,
+				E40000000000000000000006 /* Components */,
+				E40000000000000000000007 /* Views */,
+				E40000000000000000000008 /* Windows */,
+				E20000000000000000000010 /* Assets.xcassets */,
+				E20000000000000000000011 /* Echo.entitlements */,
+			);
+			path = Echo;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000012 /* Echo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000004 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000003 /* EchoTheme.swift */,
+				E20000000000000000000026 /* Bundle+Echo.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000005 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000004 /* Meeting.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000006 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000006 /* WaveformIcon.swift */,
+				E20000000000000000000007 /* RecordingDot.swift */,
+				E20000000000000000000008 /* TrafficLights.swift */,
+				E20000000000000000000022 /* MenuBarIconController.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000000E /* DesignCatalogView.swift */,
+				E2000000000000000000001D /* AppLaunchCoordinator.swift */,
+				E40000000000000000000009 /* MenuBar */,
+				E4000000000000000000000A /* FloatingPanel */,
+				E4000000000000000000000B /* History */,
+				E4000000000000000000000C /* Detail */,
+				E40000000000000000000010 /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000008 /* Windows */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000000F /* FloatingPanelController.swift */,
+			);
+			path = Windows;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000009 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000009 /* MenuBarDropdownView.swift */,
+				E2000000000000000000001E /* MenuBarLaunchLabel.swift */,
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		E4000000000000000000000A /* FloatingPanel */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000000A /* FloatingPanelView.swift */,
+			);
+			path = FloatingPanel;
+			sourceTree = "<group>";
+		};
+		E4000000000000000000000B /* History */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000000B /* HistoryWindowView.swift */,
+				E2000000000000000000000C /* MeetingRowView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		E4000000000000000000000C /* Detail */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000000D /* MeetingDetailView.swift */,
+			);
+			path = Detail;
+			sourceTree = "<group>";
+		};
+		E4000000000000000000000D /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000013 /* EchoSchema.swift */,
+				E20000000000000000000014 /* MeetingStore.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		E4000000000000000000000E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000015 /* TranscriptionService.swift */,
+				E20000000000000000000016 /* MeetingDetector.swift */,
+				E20000000000000000000017 /* SummaryService.swift */,
+				E20000000000000000000018 /* NotionService.swift */,
+				E20000000000000000000019 /* GlobalShortcutManager.swift */,
+				E2000000000000000000001A /* KeychainHelper.swift */,
+				E20000000000000000000024 /* MeetingURLDetector.swift */,
+				E20000000000000000000025 /* MeetingExportService.swift */,
+				E20000000000000000000020 /* PermissionHelper.swift */,
+				E20000000000000000000021 /* UserNotificationService.swift */,
+				E20000000000000000000023 /* SystemAudioCaptureService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E4000000000000000000000F /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000001B /* SettingsStore.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		E40000000000000000000010 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				E2000000000000000000001C /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E50000000000000000000001 /* Echo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E60000000000000000000003 /* Build configuration list for PBXNativeTarget "Echo" */;
+			buildPhases = (
+				E50000000000000000000002 /* Sources */,
+				E30000000000000000000001 /* Frameworks */,
+				E50000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Echo;
+			productName = Echo;
+			productReference = E20000000000000000000012 /* Echo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E70000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					E50000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = E60000000000000000000001 /* Build configuration list for PBXProject "Echo" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ja;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				ja,
+				Base,
+			);
+			mainGroup = E40000000000000000000001;
+			productRefGroup = E40000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E50000000000000000000001 /* Echo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E50000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E10000000000000000000010 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E50000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E10000000000000000000001 /* EchoApp.swift in Sources */,
+				E10000000000000000000002 /* AppState.swift in Sources */,
+				E10000000000000000000003 /* EchoTheme.swift in Sources */,
+				E10000000000000000000004 /* Meeting.swift in Sources */,
+				E10000000000000000000006 /* WaveformIcon.swift in Sources */,
+				E10000000000000000000007 /* RecordingDot.swift in Sources */,
+				E10000000000000000000008 /* TrafficLights.swift in Sources */,
+				E10000000000000000000009 /* MenuBarDropdownView.swift in Sources */,
+				E1000000000000000000000A /* FloatingPanelView.swift in Sources */,
+				E1000000000000000000000B /* HistoryWindowView.swift in Sources */,
+				E1000000000000000000000C /* MeetingRowView.swift in Sources */,
+				E1000000000000000000000D /* MeetingDetailView.swift in Sources */,
+				E1000000000000000000000E /* DesignCatalogView.swift in Sources */,
+				E1000000000000000000000F /* FloatingPanelController.swift in Sources */,
+				E10000000000000000000011 /* EchoSchema.swift in Sources */,
+				E10000000000000000000012 /* MeetingStore.swift in Sources */,
+				E10000000000000000000013 /* TranscriptionService.swift in Sources */,
+				E10000000000000000000014 /* MeetingDetector.swift in Sources */,
+				E10000000000000000000015 /* SummaryService.swift in Sources */,
+				E10000000000000000000016 /* NotionService.swift in Sources */,
+				E10000000000000000000017 /* GlobalShortcutManager.swift in Sources */,
+				E1000000000000000000001D /* MeetingURLDetector.swift in Sources */,
+				E10000000000000000000022 /* MeetingExportService.swift in Sources */,
+				E10000000000000000000024 /* Bundle+Echo.swift in Sources */,
+				E1000000000000000000001E /* PermissionHelper.swift in Sources */,
+				E1000000000000000000001F /* UserNotificationService.swift in Sources */,
+				E10000000000000000000020 /* MenuBarIconController.swift in Sources */,
+				E10000000000000000000021 /* SystemAudioCaptureService.swift in Sources */,
+				E10000000000000000000018 /* KeychainHelper.swift in Sources */,
+				E10000000000000000000019 /* SettingsStore.swift in Sources */,
+				E1000000000000000000001A /* SettingsView.swift in Sources */,
+				E1000000000000000000001B /* AppLaunchCoordinator.swift in Sources */,
+				E1000000000000000000001C /* MenuBarLaunchLabel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E80000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E80000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		E80000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Echo/Echo.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "会議の音声を文字起こしするためにマイクを使用します。";
+				INFOPLIST_KEY_NSScreenCaptureUsageDescription = "Google Meet などの会議で相手の声を文字起こしするために、ブラウザの音声を取得します。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "リアルタイム文字起こしのために音声認識を使用します。";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.t2k.echo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E80000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Echo/Echo.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "会議の音声を文字起こしするためにマイクを使用します。";
+				INFOPLIST_KEY_NSScreenCaptureUsageDescription = "Google Meet などの会議で相手の声を文字起こしするために、ブラウザの音声を取得します。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "リアルタイム文字起こしのために音声認識を使用します。";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.t2k.echo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E60000000000000000000001 /* Build configuration list for PBXProject "Echo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E80000000000000000000001 /* Debug */,
+				E80000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E60000000000000000000003 /* Build configuration list for PBXNativeTarget "Echo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E80000000000000000000003 /* Debug */,
+				E80000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E70000000000000000000001 /* Project object */;
+}
