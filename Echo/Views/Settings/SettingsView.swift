@@ -5,9 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
 
-    private var permissionStatus: PermissionHelper.Status {
-        PermissionHelper.status()
-    }
+    @State private var permissionStatus = PermissionHelper.status()
 
     var body: some View {
         Form {
@@ -15,6 +13,8 @@ struct SettingsView: View {
                 Toggle("会議検知時に自動で文字起こしを開始（Google Meet / Zoom）", isOn: $settingsStore.autoStartOnMeetDetection)
 
                 Toggle("会議の相手の声も文字起こしする", isOn: $settingsStore.captureSystemAudio)
+
+                Toggle("録音停止後にローカルAIで話者を判別する", isOn: $settingsStore.enablePostRecordingDiarization)
 
                 Picker("認識言語", selection: $settingsStore.localeIdentifier) {
                     Text("日本語").tag("ja-JP")
@@ -24,7 +24,7 @@ struct SettingsView: View {
                     appState.transcriptionService.configure(localeIdentifier: newValue)
                 }
 
-                Text("話者A＝自分（マイク）、話者B＝相手（ブラウザの会議音声）。会議音声の取得には画面収録の権限が必要です。")
+                Text("話者A＝自分（マイク）。会議音声側は録音停止後に SpeakerKit（Pyannote）で話者B〜Hを判別します。初回のみモデルをダウンロードします（無料・端末内処理）。会議音声の取得には画面収録の権限が必要です。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -52,6 +52,14 @@ struct SettingsView: View {
                 PermissionStatusRow(title: "画面収録", isGranted: permissionStatus.screenRecording)
                 PermissionStatusRow(title: "アクセシビリティ", isGranted: permissionStatus.accessibility)
 
+                Text("初回のみダイアログが表示されます。一度許可すれば、次回以降は聞かれません。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text("画面収録を許可したあとは、Echo を一度終了して再起動してください。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                 Text("Google Meet / Zoom の自動検知には、ブラウザまたは Zoom アプリを前面にしてください。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -62,8 +70,21 @@ struct SettingsView: View {
                 PermissionSettingsButton(title: "アクセシビリティの設定を開く", pane: .accessibility)
                 PermissionSettingsButton(title: "自動化の設定を開く", pane: .automation)
 
+                Button("マイク・音声認識の許可をリクエスト") {
+                    Task {
+                        _ = await appState.transcriptionService.requestPermissions()
+                        refreshPermissionStatus()
+                    }
+                }
+
+                Button("画面収録の許可をリクエスト") {
+                    SystemAudioCaptureService.requestScreenRecordingPermission()
+                    refreshPermissionStatus()
+                }
+
                 Button("アクセシビリティの許可をリクエスト") {
                     PermissionHelper.promptAccessibilityIfNeeded()
+                    refreshPermissionStatus()
                 }
             }
 
@@ -88,8 +109,25 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 520, height: 620)
+        .frame(width: 520, height: 680)
         .navigationTitle("環境設定")
+        .onAppear {
+            refreshPermissionStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            refreshPermissionStatusDebounced()
+        }
+    }
+
+    private func refreshPermissionStatus() {
+        permissionStatus = PermissionHelper.status()
+    }
+
+    private func refreshPermissionStatusDebounced() {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(500))
+            permissionStatus = PermissionHelper.status()
+        }
     }
 }
 

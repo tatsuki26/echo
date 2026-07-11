@@ -1,6 +1,8 @@
 import AVFoundation
 import Foundation
+import SpeakerKit
 import Speech
+import WhisperKit
 
 final class TranscriptionService: ObservableObject {
     @Published private(set) var liveLines: [TranscriptLine] = []
@@ -21,9 +23,15 @@ final class TranscriptionService: ObservableObject {
     private var timer: Timer?
     private var startedAt = Date()
     private var partialLineIDs: [Speaker: UUID] = [:]
-    private var lastFinalTimestamps: [Speaker: Date] = [.a: .distantPast, .b: .distantPast]
     private var usesDualChannel = false
-    private var micOnlySpeaker: Speaker = .a
+    private var micOnlySpeakerIndex = 0
+    private var currentRemoteSpeakerIndex = 0
+    private var lastMicOnlyFinalAt = Date.distantPast
+    private var lastSystemChannelFinalAt = Date.distantPast
+    private let speakerPauseThreshold: TimeInterval = 2.5
+    private var recordingSessionDirectory: URL?
+    private var micRecorder: AudioRecordingWriter?
+    private var systemRecorder: AudioRecordingWriter?
 
     var formattedDuration: String {
         let minutes = elapsedSeconds / 60
@@ -42,19 +50,9 @@ final class TranscriptionService: ObservableObject {
     }
 
     func requestPermissions() async -> (speech: Bool, microphone: Bool) {
-        let speechGranted = await withCheckedContinuation { continuation in
-            SFSpeechRecognizer.requestAuthorization { status in
-                continuation.resume(returning: status == .authorized)
-            }
-        }
-
-        let micGranted = await withCheckedContinuation { continuation in
-            AVCaptureDevice.requestAccess(for: .audio) { granted in
-                continuation.resume(returning: granted)
-            }
-        }
-
-        return (speechGranted, micGranted)
+        async let speech = PermissionHelper.requestSpeechIfNeeded()
+        async let microphone = PermissionHelper.requestMicrophoneIfNeeded()
+        return await (speech: speech, microphone: microphone)
     }
 
     @MainActor
@@ -85,10 +83,15 @@ final class TranscriptionService: ObservableObject {
         elapsedSeconds = 0
         startedAt = Date()
         partialLineIDs = [:]
-        lastFinalTimestamps = [.a: .distantPast, .b: .distantPast]
         usesDualChannel = false
-        micOnlySpeaker = .a
+        micOnlySpeakerIndex = 0
+        currentRemoteSpeakerIndex = 0
+        lastMicOnlyFinalAt = .distantPast
+        lastSystemChannelFinalAt = .distantPast
         isCapturingSystemAudio = false
+        recordingSessionDirectory = try? RecordingFileStore.makeSessionDirectory()
+        micRecorder = nil
+        systemRecorder = nil
 
         let engine = AVAudioEngine()
         audioEngine = engine
@@ -105,9 +108,15 @@ final class TranscriptionService: ObservableObject {
             throw TranscriptionError.audioInputUnavailable
         }
 
+        if let recordingSessionDirectory {
+            let micURL = recordingSessionDirectory.appendingPathComponent("mic.wav")
+            micRecorder = AudioRecordingWriter(url: micURL, format: recordingFormat)
+        }
+
         inputNode.removeTap(onBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: recordingFormat) { buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: recordingFormat) { [weak self] buffer, _ in
             micRequest.append(buffer)
+            self?.micRecorder?.append(buffer)
         }
 
         engine.prepare()
@@ -139,6 +148,7 @@ final class TranscriptionService: ObservableObject {
 
                 try await systemAudioCapture.start(preferredBundleID: browserBundleID) { [weak self] buffer in
                     self?.systemRecognitionRequest?.append(buffer)
+                    self?.appendSystemAudioBuffer(buffer)
                 }
 
                 usesDualChannel = true
@@ -156,7 +166,7 @@ final class TranscriptionService: ObservableObject {
     }
 
     @MainActor
-    func stop() -> StoredMeeting {
+    func stop() async -> RecordingStopResult {
         timer?.invalidate()
         timer = nil
         isRecording = false
@@ -177,9 +187,9 @@ final class TranscriptionService: ObservableObject {
         micRecognitionTask = nil
         systemRecognitionTask = nil
 
-        Task {
-            await systemAudioCapture.stop()
-        }
+        await systemAudioCapture.stop()
+        await micRecorder?.finish()
+        await systemRecorder?.finish()
 
         finalizePartialLines()
 
@@ -193,7 +203,7 @@ final class TranscriptionService: ObservableObject {
             )
         }
 
-        return StoredMeeting(
+        let meeting = StoredMeeting(
             title: currentMeetingTitle,
             startedAt: startedAt,
             endedAt: endDate,
@@ -202,6 +212,29 @@ final class TranscriptionService: ObservableObject {
             transcriptLines: storedLines,
             actionItems: []
         )
+
+        let micURL = micRecorder?.fileURL
+        let systemURL = systemRecorder?.fileURL
+        micRecorder = nil
+        systemRecorder = nil
+
+        return RecordingStopResult(
+            meeting: meeting,
+            sessionDirectory: recordingSessionDirectory,
+            micAudioURL: micURL,
+            systemAudioURL: systemURL,
+            usesDualChannel: usesDualChannel
+        )
+    }
+
+    private func appendSystemAudioBuffer(_ buffer: AVAudioPCMBuffer) {
+        if systemRecorder == nil,
+           let recordingSessionDirectory {
+            let format = buffer.format
+            let systemURL = recordingSessionDirectory.appendingPathComponent("system.wav")
+            systemRecorder = AudioRecordingWriter(url: systemURL, format: format)
+        }
+        systemRecorder?.append(buffer)
     }
 
     private func cleanupAfterFailedStart() {
@@ -251,21 +284,7 @@ final class TranscriptionService: ObservableObject {
     private func appendFinalLine(_ text: String, speaker: Speaker) {
         finalizePartialLine(for: speaker)
 
-        let resolved: Speaker
-        if usesDualChannel {
-            resolved = speaker
-        } else {
-            if Date().timeIntervalSince(lastFinalTimestamps[.a, default: .distantPast]) > 2.5 {
-                micOnlySpeaker.toggle()
-            }
-            lastFinalTimestamps[.a] = Date()
-            resolved = micOnlySpeaker
-        }
-
-        if usesDualChannel {
-            lastFinalTimestamps[speaker] = Date()
-        }
-
+        let resolved = resolveSpeaker(for: speaker, isFinal: true)
         let line = TranscriptLine(speaker: resolved, text: text, isDimmed: false)
         liveLines.append(line)
         partialLineIDs[speaker] = nil
@@ -273,11 +292,41 @@ final class TranscriptionService: ObservableObject {
         trimLiveLines()
     }
 
-    private func resolvedSpeaker(for channelSpeaker: Speaker) -> Speaker {
+    private func resolveSpeaker(for channelSpeaker: Speaker, isFinal: Bool) -> Speaker {
         if usesDualChannel {
-            return channelSpeaker
+            if channelSpeaker == .a {
+                return .a
+            }
+
+            if isFinal {
+                let now = Date()
+                if lastSystemChannelFinalAt != .distantPast,
+                   now.timeIntervalSince(lastSystemChannelFinalAt) > speakerPauseThreshold {
+                    currentRemoteSpeakerIndex = min(
+                        currentRemoteSpeakerIndex + 1,
+                        Speaker.remoteOrder.count - 1
+                    )
+                }
+                lastSystemChannelFinalAt = now
+            }
+
+            return Speaker.remoteSpeaker(at: currentRemoteSpeakerIndex)
         }
-        return micOnlySpeaker
+
+        if isFinal {
+            let now = Date()
+            if lastMicOnlyFinalAt != .distantPast,
+               now.timeIntervalSince(lastMicOnlyFinalAt) > speakerPauseThreshold {
+                micOnlySpeakerIndex = min(micOnlySpeakerIndex + 1, Speaker.allCases.count - 1)
+            }
+            lastMicOnlyFinalAt = now
+        }
+
+        return Speaker.allCases[micOnlySpeakerIndex]
+    }
+
+    private func resolvedSpeaker(for channelSpeaker: Speaker) -> Speaker {
+        resolveSpeaker(for: channelSpeaker, isFinal: false)
     }
 
     private func updatePartialLine(_ text: String, speaker: Speaker) {
@@ -341,5 +390,239 @@ enum TranscriptionError: LocalizedError {
         case .audioInputUnavailable:
             return "マイク入力を取得できません。マイクの接続と権限を確認してください。"
         }
+    }
+}
+
+// MARK: - Audio Recording
+
+/// 録音中の PCM バッファを WAV ファイルへ書き込む。
+final class AudioRecordingWriter {
+    let fileURL: URL
+
+    private let queue = DispatchQueue(label: "echo.audio-recording-writer")
+    private var audioFile: AVAudioFile?
+
+    init?(url: URL, format: AVAudioFormat) {
+        fileURL = url
+        do {
+            audioFile = try AVAudioFile(forWriting: url, settings: format.settings)
+        } catch {
+            print("Echo: failed to create audio file at \(url.path): \(error)")
+            return nil
+        }
+    }
+
+    func append(_ buffer: AVAudioPCMBuffer) {
+        queue.async { [weak self] in
+            guard let self, let audioFile else { return }
+            do {
+                try audioFile.write(from: buffer)
+            } catch {
+                print("Echo: audio write failed: \(error)")
+            }
+        }
+    }
+
+    func finish() async {
+        await withCheckedContinuation { continuation in
+            queue.async { [weak self] in
+                self?.audioFile = nil
+                continuation.resume()
+            }
+        }
+    }
+}
+
+enum RecordingFileStore {
+    static func makeSessionDirectory() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("echo-recordings", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
+
+    static func removeSession(at directory: URL?) {
+        guard let directory else { return }
+        try? FileManager.default.removeItem(at: directory)
+    }
+}
+
+struct RecordingStopResult {
+    let meeting: StoredMeeting
+    let sessionDirectory: URL?
+    let micAudioURL: URL?
+    let systemAudioURL: URL?
+    let usesDualChannel: Bool
+}
+
+// MARK: - Post-Recording Diarization
+
+private struct TimedTranscriptLine {
+    let speaker: Speaker
+    let text: String
+    let startTime: TimeInterval
+}
+
+struct PostRecordingDiarizationService {
+    enum DiarizationError: LocalizedError {
+        case noAudio
+        case emptyResult
+
+        var errorDescription: String? {
+            switch self {
+            case .noAudio:
+                return "話者判別用の音声ファイルがありません。"
+            case .emptyResult:
+                return "話者判別の結果が空でした。"
+            }
+        }
+    }
+
+    func refineTranscript(
+        micAudioURL: URL?,
+        systemAudioURL: URL?,
+        usesDualChannel: Bool,
+        fallbackLines: [TranscriptLine]
+    ) async throws -> [TranscriptLine] {
+        let whisperKit = try await WhisperKit(WhisperKitConfig(model: "base"))
+        let speakerKit = try await SpeakerKit()
+
+        var timedLines: [TimedTranscriptLine] = []
+
+        if usesDualChannel, let systemAudioURL {
+            if let micAudioURL {
+                let micLines = try await transcribeMicChannel(
+                    url: micAudioURL,
+                    whisperKit: whisperKit
+                )
+                timedLines.append(contentsOf: micLines)
+            }
+            let remoteLines = try await transcribeAndDiarizeRemoteChannel(
+                url: systemAudioURL,
+                whisperKit: whisperKit,
+                speakerKit: speakerKit
+            )
+            timedLines.append(contentsOf: remoteLines)
+        } else if let micAudioURL {
+            timedLines = try await transcribeAndDiarizeSingleChannel(
+                url: micAudioURL,
+                whisperKit: whisperKit,
+                speakerKit: speakerKit
+            )
+        } else {
+            throw DiarizationError.noAudio
+        }
+
+        let refined = timedLines
+            .filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .sorted { $0.startTime < $1.startTime }
+            .map { TranscriptLine(speaker: $0.speaker, text: $0.text, isDimmed: false) }
+
+        if refined.isEmpty {
+            if fallbackLines.isEmpty {
+                throw DiarizationError.emptyResult
+            }
+            return fallbackLines
+        }
+
+        return refined
+    }
+
+    private func transcribeMicChannel(
+        url: URL,
+        whisperKit: WhisperKit
+    ) async throws -> [TimedTranscriptLine] {
+        let audioArray = try AudioProcessor.loadAudioAsFloatArray(fromPath: url.path)
+        guard !audioArray.isEmpty else { return [] }
+
+        let transcription = try await whisperKit.transcribe(audioArray: audioArray)
+        return flattenTranscription(transcription).map {
+            TimedTranscriptLine(speaker: .a, text: $0.text, startTime: $0.startTime)
+        }
+    }
+
+    private func transcribeAndDiarizeRemoteChannel(
+        url: URL,
+        whisperKit: WhisperKit,
+        speakerKit: SpeakerKit
+    ) async throws -> [TimedTranscriptLine] {
+        let audioArray = try AudioProcessor.loadAudioAsFloatArray(fromPath: url.path)
+        guard !audioArray.isEmpty else { return [] }
+
+        let transcription = try await whisperKit.transcribe(audioArray: audioArray)
+        let diarization = try await speakerKit.diarize(audioArray: audioArray)
+        let speakerSegments = diarization.addSpeakerInfo(to: transcription)
+
+        return mapSpeakerSegments(speakerSegments, remoteChannel: true)
+    }
+
+    private func transcribeAndDiarizeSingleChannel(
+        url: URL,
+        whisperKit: WhisperKit,
+        speakerKit: SpeakerKit
+    ) async throws -> [TimedTranscriptLine] {
+        let audioArray = try AudioProcessor.loadAudioAsFloatArray(fromPath: url.path)
+        guard !audioArray.isEmpty else { return [] }
+
+        let transcription = try await whisperKit.transcribe(audioArray: audioArray)
+        let diarization = try await speakerKit.diarize(audioArray: audioArray)
+        let speakerSegments = diarization.addSpeakerInfo(to: transcription)
+
+        return mapSpeakerSegments(speakerSegments, remoteChannel: false)
+    }
+
+    private struct FlatSegment {
+        let text: String
+        let startTime: TimeInterval
+    }
+
+    private func flattenTranscription(_ transcription: [TranscriptionResult]) -> [FlatSegment] {
+        transcription.flatMap { result in
+            result.segments.map { segment in
+                FlatSegment(text: segment.text, startTime: TimeInterval(segment.start))
+            }
+        }
+    }
+
+    private func mapSpeakerSegments(
+        _ speakerSegments: [[SpeakerSegment]],
+        remoteChannel: Bool
+    ) -> [TimedTranscriptLine] {
+        var clusterOrder: [Int: Int] = [:]
+        var nextClusterIndex = 0
+        var lines: [TimedTranscriptLine] = []
+
+        for group in speakerSegments {
+            for segment in group {
+                let text = segment.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.isEmpty else { continue }
+
+                let clusterID = segment.speaker.speakerId ?? nextClusterIndex
+                if clusterOrder[clusterID] == nil {
+                    clusterOrder[clusterID] = nextClusterIndex
+                    nextClusterIndex += 1
+                }
+
+                let mappedIndex = clusterOrder[clusterID] ?? 0
+                let speaker = mapClusterIndex(mappedIndex, remoteChannel: remoteChannel)
+                lines.append(
+                    TimedTranscriptLine(
+                        speaker: speaker,
+                        text: text,
+                        startTime: TimeInterval(segment.startTime)
+                    )
+                )
+            }
+        }
+
+        return lines
+    }
+
+    private func mapClusterIndex(_ index: Int, remoteChannel: Bool) -> Speaker {
+        if remoteChannel {
+            return Speaker.remoteSpeaker(at: index)
+        }
+        return Speaker.allCases[min(index, Speaker.allCases.count - 1)]
     }
 }

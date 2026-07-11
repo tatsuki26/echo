@@ -3,15 +3,17 @@ import SwiftUI
 struct MenuBarDropdownView: View {
     @Environment(\.openWindow) private var openWindow
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var transcriptionService: TranscriptionService
+    @EnvironmentObject private var meetingDetector: MeetingDetector
     @EnvironmentObject private var panelCoordinator: PanelCoordinator
 
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    if appState.isRecording {
+                    if transcriptionService.isRecording {
                         RecordingDot()
-                        Text("文字起こし中 — \(appState.currentMeetingTitle) (\(appState.recordingDuration))")
+                        Text("文字起こし中 — \(transcriptionService.currentMeetingTitle) (\(transcriptionService.formattedDuration))")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Color.echoTextPrimary)
                     } else {
@@ -24,7 +26,7 @@ struct MenuBarDropdownView: View {
                     }
                 }
 
-                Text(appState.detectedMeeting)
+                Text(meetingDetector.statusMessage)
                     .font(.system(size: 11.5))
                     .foregroundStyle(Color.echoTextSecondary)
 
@@ -33,14 +35,14 @@ struct MenuBarDropdownView: View {
                         .font(.system(size: 10.5))
                         .foregroundStyle(Color.orange)
                         .fixedSize(horizontal: false, vertical: true)
-                } else if appState.isRecording, appState.transcriptionService.isCapturingSystemAudio {
-                    Text("話者A＝自分（マイク）／話者B＝相手（会議音声）")
+                } else if transcriptionService.isRecording, transcriptionService.isCapturingSystemAudio {
+                    Text("話者A＝自分。停止後にローカルAIで話者B以降を判別")
                         .font(.system(size: 10))
                         .foregroundStyle(Color.echoTextTertiary)
                         .fixedSize(horizontal: false, vertical: true)
-                } else if !appState.isRecording {
-                    if appState.transcriptionService.isCapturingSystemAudio {
-                        Text("話者A＝自分（マイク）／話者B＝相手（会議音声）")
+                } else if !transcriptionService.isRecording {
+                    if transcriptionService.isCapturingSystemAudio {
+                        Text("話者A＝自分。停止後にローカルAIで話者B以降を判別")
                             .font(.system(size: 10))
                             .foregroundStyle(Color.echoTextTertiary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -58,7 +60,7 @@ struct MenuBarDropdownView: View {
             .padding(.bottom, 12)
             .overlay(alignment: .bottom) { EchoDivider() }
 
-            if appState.isRecording {
+            if transcriptionService.isRecording {
                 MenuBarItem(
                     title: "停止する",
                     shortcut: "⌘⇧S",
@@ -70,12 +72,7 @@ struct MenuBarDropdownView: View {
                 EchoDivider().padding(.horizontal, 0)
             } else {
                 MenuBarItem(title: "文字起こしを開始", shortcut: "⌘⇧S", isAccent: true) {
-                    Task {
-                        appState.isFloatingPanelVisible = true
-                        panelCoordinator.syncFloatingPanel(appState: appState)
-                        await appState.toggleRecording()
-                        panelCoordinator.syncFloatingPanel(appState: appState)
-                    }
+                    Task { await appState.toggleRecording() }
                 }
 
                 EchoDivider().padding(.horizontal, 0)
@@ -87,8 +84,7 @@ struct MenuBarDropdownView: View {
             }
 
             MenuBarItem(title: "履歴を開く", shortcut: "⌘O") {
-                NSApp.activate(ignoringOtherApps: true)
-                openWindow(id: "history")
+                appState.openHistoryWindow()
             }
 
             EchoDivider()

@@ -51,13 +51,14 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput {
         onAudioBuffer: @escaping (AVAudioPCMBuffer) -> Void
     ) async throws {
         guard Self.hasScreenRecordingPermission() else {
-            Self.requestScreenRecordingPermission()
             throw SystemAudioCaptureError.screenRecordingPermissionRequired
         }
 
         self.onAudioBuffer = onAudioBuffer
 
-        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        let content = try await Task.detached(priority: .userInitiated) {
+            try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        }.value
         guard let display = content.displays.first else {
             throw SystemAudioCaptureError.streamFailed("ディスプレイが見つかりません")
         }

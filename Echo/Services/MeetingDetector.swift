@@ -74,15 +74,25 @@ final class MeetingDetector: ObservableObject {
         let previous = detectedMeeting
 
         if let meeting {
-            detectedMeeting = meeting
-            statusMessage = "\(meeting.source) を検知（\(meeting.browserName)）"
+            if detectedMeeting != meeting {
+                detectedMeeting = meeting
+            }
+            let message = "\(meeting.source) を検知（\(meeting.browserName)）"
+            if statusMessage != message {
+                statusMessage = message
+            }
 
             if previous == nil || previous?.title != meeting.title {
                 onMeetingDetected?(meeting)
             }
         } else {
-            detectedMeeting = nil
-            statusMessage = "会議アプリを監視中…（会議タブが見つかりません）"
+            if detectedMeeting != nil {
+                detectedMeeting = nil
+            }
+            let idleMessage = "会議アプリを監視中…（会議タブが見つかりません）"
+            if statusMessage != idleMessage {
+                statusMessage = idleMessage
+            }
         }
     }
 

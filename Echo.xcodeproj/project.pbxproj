@@ -41,6 +41,8 @@
 		E1000000000000000000001A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001C /* SettingsView.swift */; };
 		E1000000000000000000001B /* AppLaunchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001D /* AppLaunchCoordinator.swift */; };
 		E1000000000000000000001C /* MenuBarLaunchLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000000000000000000001E /* MenuBarLaunchLabel.swift */; };
+		E10000000000000000000027 /* MainWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000029 /* MainWindowManager.swift */; };
+		E10000000000000000000025 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000027 /* HomeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -80,7 +82,8 @@
 		E20000000000000000000021 /* UserNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationService.swift; sourceTree = "<group>"; };
 		E20000000000000000000022 /* MenuBarIconController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIconController.swift; sourceTree = "<group>"; };
 		E20000000000000000000023 /* SystemAudioCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCaptureService.swift; sourceTree = "<group>"; };
-/* End PBXFileReference section */
+		E20000000000000000000029 /* MainWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowManager.swift; sourceTree = "<group>"; };
+		E20000000000000000000027 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 
 /* Begin PBXFrameworksBuildPhase section */
 		E30000000000000000000001 /* Frameworks */ = {
@@ -174,6 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				E2000000000000000000000F /* FloatingPanelController.swift */,
+				E20000000000000000000029 /* MainWindowManager.swift */,
 			);
 			path = Windows;
 			sourceTree = "<group>";
@@ -198,6 +202,7 @@
 		E4000000000000000000000B /* History */ = {
 			isa = PBXGroup;
 			children = (
+				E20000000000000000000027 /* HomeView.swift */,
 				E2000000000000000000000B /* HistoryWindowView.swift */,
 				E2000000000000000000000C /* MeetingRowView.swift */,
 			);
@@ -271,6 +276,10 @@
 			dependencies = (
 			);
 			name = Echo;
+			packageProductDependencies = (
+				EA0000000000000000000001 /* WhisperKit */,
+				EA0000000000000000000002 /* SpeakerKit */,
+			);
 			productName = Echo;
 			productReference = E20000000000000000000012 /* Echo.app */;
 			productType = "com.apple.product-type.application";
@@ -300,6 +309,9 @@
 				Base,
 			);
 			mainGroup = E40000000000000000000001;
+			packageReferences = (
+				E90000000000000000000001 /* XCRemoteSwiftPackageReference "argmax-oss-swift" */,
+			);
 			productRefGroup = E40000000000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -335,6 +347,7 @@
 				E10000000000000000000009 /* MenuBarDropdownView.swift in Sources */,
 				E1000000000000000000000A /* FloatingPanelView.swift in Sources */,
 				E1000000000000000000000B /* HistoryWindowView.swift in Sources */,
+				E10000000000000000000025 /* HomeView.swift in Sources */,
 				E1000000000000000000000C /* MeetingRowView.swift in Sources */,
 				E1000000000000000000000D /* MeetingDetailView.swift in Sources */,
 				E1000000000000000000000E /* DesignCatalogView.swift in Sources */,
@@ -358,6 +371,7 @@
 				E1000000000000000000001A /* SettingsView.swift in Sources */,
 				E1000000000000000000001B /* AppLaunchCoordinator.swift in Sources */,
 				E1000000000000000000001C /* MenuBarLaunchLabel.swift in Sources */,
+				E10000000000000000000027 /* MainWindowManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -546,6 +560,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E90000000000000000000001 /* XCRemoteSwiftPackageReference "argmax-oss-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/argmax-oss-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		EA0000000000000000000001 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E90000000000000000000001 /* XCRemoteSwiftPackageReference "argmax-oss-swift" */;
+			productName = WhisperKit;
+		};
+		EA0000000000000000000002 /* SpeakerKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E90000000000000000000001 /* XCRemoteSwiftPackageReference "argmax-oss-swift" */;
+			productName = SpeakerKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E70000000000000000000001 /* Project object */;
 }

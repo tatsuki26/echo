@@ -1,17 +1,42 @@
 import Foundation
+import SwiftUI
 
-enum Speaker: String, Codable {
+enum Speaker: String, Codable, CaseIterable {
     case a = "話者A"
     case b = "話者B"
+    case c = "話者C"
+    case d = "話者D"
+    case e = "話者E"
+    case f = "話者F"
+    case g = "話者G"
+    case h = "話者H"
 
     var label: String { rawValue }
 
+    static let remoteOrder: [Speaker] = [.b, .c, .d, .e, .f, .g, .h]
+
     /// デュアルチャンネル時の補足ラベル
     var channelHint: String {
+        self == .a ? "自分" : "参加者"
+    }
+
+    var isSelf: Bool { self == .a }
+
+    var color: Color {
         switch self {
-        case .a: return "自分"
-        case .b: return "相手"
+        case .a: .echoSpeakerA
+        case .b: .echoSpeakerB
+        case .c: Color(red: 0.18, green: 0.72, blue: 0.45)
+        case .d: Color(red: 0.58, green: 0.36, blue: 0.96)
+        case .e: Color(red: 0.93, green: 0.30, blue: 0.55)
+        case .f: Color(red: 0.98, green: 0.62, blue: 0.04)
+        case .g: Color(red: 0.20, green: 0.78, blue: 0.85)
+        case .h: Color(red: 0.55, green: 0.55, blue: 0.58)
         }
+    }
+
+    static func remoteSpeaker(at index: Int) -> Speaker {
+        remoteOrder[min(max(0, index), remoteOrder.count - 1)]
     }
 
     mutating func toggle() {

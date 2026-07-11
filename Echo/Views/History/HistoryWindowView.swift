@@ -4,51 +4,92 @@ struct HistoryWindowView: View {
     @EnvironmentObject private var appState: AppState
 
     var body: some View {
-        Group {
-            if appState.isShowingDetail, let meeting = appState.selectedMeeting {
+        NavigationStack {
+            content
+                .frame(minWidth: 640, minHeight: 560)
+                .background(Color.echoBgPage)
+                .toolbar { toolbarContent }
+                .toolbarBackground(Color.echoBgPanel, for: .windowToolbar)
+                .toolbarBackground(.visible, for: .windowToolbar)
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch appState.mainWindowScreen {
+        case .home:
+            HomeView()
+        case .history:
+            historyList
+        case .detail:
+            if let meeting = appState.selectedMeeting {
                 MeetingDetailView(meeting: meeting)
             } else {
-                historyList
+                HomeView()
             }
         }
-        .frame(minWidth: 420, minHeight: 460)
-        .background(Color.echoBgPanel)
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        if appState.mainWindowScreen == .detail {
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    appState.mainWindowScreen = .history
+                } label: {
+                    Label("履歴", systemImage: "chevron.left")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .buttonStyle(.plain)
+            }
+
+            ToolbarItem(placement: .principal) {
+                Text(appState.selectedMeeting?.title ?? "会議詳細")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.echoTextPrimary)
+                    .lineLimit(1)
+            }
+
+            if let meeting = appState.selectedMeeting {
+                ToolbarItem(placement: .destructiveAction) {
+                    Button("削除", role: .destructive) {
+                        appState.deleteMeeting(id: meeting.id)
+                    }
+                }
+            }
+        } else {
+            ToolbarItem(placement: .principal) {
+                Picker("画面", selection: homeHistorySelection) {
+                    Text("ホーム").tag(MainWindowScreen.home)
+                    Text("履歴").tag(MainWindowScreen.history)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 156)
+            }
+        }
+    }
+
+    private var homeHistorySelection: Binding<MainWindowScreen> {
+        Binding(
+            get: {
+                appState.mainWindowScreen == .history ? .history : .home
+            },
+            set: { appState.mainWindowScreen = $0 }
+        )
     }
 
     private var historyList: some View {
         VStack(spacing: 0) {
-            titleBar
             searchBar
             meetingList
         }
-        .background(Color.echoBgPanel)
-        .clipShape(RoundedRectangle(cornerRadius: EchoRadius.window, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 30, x: 0, y: 20)
-        .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
-    }
-
-    private var titleBar: some View {
-        ZStack {
-            HStack(spacing: 6) {
-                WaveformIcon(animated: true, targetFPS: 60)
-                Text("Echo — 履歴")
-                    .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(Color.echoTextSecondary)
-            }
-
-            HStack {
-                TrafficLights()
-                Spacer()
-            }
-        }
-        .padding(.horizontal, 14)
-        .frame(height: 38)
-        .overlay(alignment: .bottom) { EchoDivider() }
     }
 
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
+                .font(.system(size: 12))
                 .foregroundStyle(Color.echoTextTertiary)
 
             ZStack(alignment: .leading) {
@@ -67,17 +108,22 @@ struct HistoryWindowView: View {
             }
 
             if !appState.searchQuery.isEmpty {
-                Text("「\(appState.searchQuery)」を検索中 — \(appState.filteredMeetings.count)件ヒット")
+                Text("\(appState.filteredMeetings.count)件")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.echoTextTertiary)
-                    .lineLimit(1)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color.echoBgPage)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(Color.echoBgPanel)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .padding(14)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.echoBorder, lineWidth: 1)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.echoBgPage)
         .overlay(alignment: .bottom) { EchoDivider() }
     }
 
@@ -92,7 +138,7 @@ struct HistoryWindowView: View {
                     )
                     .onTapGesture {
                         appState.selectedMeetingID = meeting.id
-                        appState.isShowingDetail = true
+                        appState.mainWindowScreen = .detail
                     }
                     .contextMenu {
                         Button("削除", role: .destructive) {
@@ -101,8 +147,8 @@ struct HistoryWindowView: View {
                     }
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
         }
     }
 }

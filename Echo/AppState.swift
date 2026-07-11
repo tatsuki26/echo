@@ -1,14 +1,16 @@
 import AppKit
+import AVFoundation
 import Combine
 import Foundation
+import Speech
 import SwiftUI
 
 final class AppState: ObservableObject {
     @Published var searchQuery = ""
     @Published var selectedMeetingID: UUID?
-    @Published var isShowingDetail = false
+    @Published var mainWindowScreen: MainWindowScreen = .home
     @Published var selectedTab: MeetingDetailTab = .summary
-    @Published var isFloatingPanelVisible = true
+    @Published var isFloatingPanelVisible = false
     @Published var isSettingsPresented = false
     @Published var bannerMessage: String?
     @Published var isProcessing = false
@@ -20,10 +22,13 @@ final class AppState: ObservableObject {
     let summaryService = SummaryService()
     let notionService = NotionService()
     let shortcutManager = GlobalShortcutManager()
+    let postRecordingDiarizationService = PostRecordingDiarizationService()
 
     let menuBarIconController: MenuBarIconController
 
     private var lastAutoStartedMeetingTitle: String?
+    private var lastBecameActiveAt = Date.distantPast
+    private let launchedAt = Date()
     private var cancellables = Set<AnyCancellable>()
 
     init(
@@ -39,20 +44,17 @@ final class AppState: ObservableObject {
         self.settingsStore = settingsStore
         self.menuBarIconController = menuBarIconController
 
-        transcriptionService.objectWillChange
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
-
-        meetingDetector.objectWillChange
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
-
         transcriptionService.$isRecording
             .receive(on: RunLoop.main)
             .sink { [weak menuBarIconController] isRecording in
                 menuBarIconController?.setRecording(isRecording)
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.lastBecameActiveAt = Date()
             }
             .store(in: &cancellables)
     }
@@ -95,27 +97,38 @@ final class AppState: ObservableObject {
     }
 
     func requestPermissionsIfNeeded() async -> Bool {
+        let current = PermissionHelper.status()
+
+        if current.microphone && current.speech {
+            return true
+        }
+
         let permissions = await transcriptionService.requestPermissions()
+
         if !permissions.microphone {
-            presentPermissionIssue(
-                "マイクの権限が必要です。システム設定 → プライバシーとセキュリティ → マイク で Echo を許可してください。"
-            )
-            PermissionHelper.openSettings(.microphone)
+            let status = AVCaptureDevice.authorizationStatus(for: .audio)
+            if status == .denied || status == .restricted {
+                presentPermissionIssue(
+                    "マイクの権限が必要です。システム設定 → プライバシーとセキュリティ → マイク で Echo を許可してください。"
+                )
+                PermissionHelper.openSettings(.microphone)
+            }
             return false
         }
         if !permissions.speech {
-            presentPermissionIssue(
-                "音声認識の権限が必要です。システム設定 → プライバシーとセキュリティ → 音声認識 で Echo を許可してください。"
-            )
-            PermissionHelper.openSettings(.speechRecognition)
+            let status = SFSpeechRecognizer.authorizationStatus()
+            if status == .denied || status == .restricted {
+                presentPermissionIssue(
+                    "音声認識の権限が必要です。システム設定 → プライバシーとセキュリティ → 音声認識 で Echo を許可してください。"
+                )
+                PermissionHelper.openSettings(.speechRecognition)
+            }
             return false
         }
         return true
     }
 
     func registerShortcuts() {
-        PermissionHelper.promptAccessibilityIfNeeded()
-
         shortcutManager.onToggleRecording = { [weak self] in
             Task { @MainActor in
                 await self?.toggleRecording()
@@ -144,7 +157,16 @@ final class AppState: ObservableObject {
     }
 
     func openHistoryWindow() {
-        NSApp.activate(ignoringOtherApps: true)
+        mainWindowScreen = .history
+        NotificationCenter.default.post(name: .echoOpenHistory, object: nil)
+    }
+
+    func openHomeWindow() {
+        mainWindowScreen = .home
+        NotificationCenter.default.post(name: .echoOpenHistory, object: nil)
+    }
+
+    func showMainWindow() {
         NotificationCenter.default.post(name: .echoOpenHistory, object: nil)
     }
 
@@ -157,6 +179,12 @@ final class AppState: ObservableObject {
         guard settingsStore.autoStartOnMeetDetection,
               let meeting,
               !isRecording else { return }
+
+        // 起動直後の自動録音開始を避ける
+        guard Date().timeIntervalSince(launchedAt) > 45 else { return }
+
+        // システム設定から戻った直後の自動録音開始を避ける
+        guard Date().timeIntervalSince(lastBecameActiveAt) > 2.0 else { return }
 
         if lastAutoStartedMeetingTitle == meeting.title { return }
 
@@ -184,12 +212,11 @@ final class AppState: ObservableObject {
                     ?? NSWorkspace.shared.frontmostApplication?.bundleIdentifier
             )
             lastAutoStartedMeetingTitle = title
-            isFloatingPanelVisible = true
             NotificationCenter.default.post(name: .echoRecordingStateChanged, object: nil)
 
             let captureNote = transcriptionService.isCapturingSystemAudio
-                ? "マイク（話者A）と会議音声（話者B）を文字起こししています。"
-                : "マイクに向かって話してください。"
+                ? "話者A＝自分（マイク）。会議音声は発言間隔から話者B以降を推定します。"
+                : "マイクに向かって話してください。発言間隔から話者を推定します。"
             let message = "「\(title)」の文字起こしを開始しました。\(captureNote)"
             bannerMessage = message
             UserNotificationService.notify(title: "Echo", body: message)
@@ -209,10 +236,10 @@ final class AppState: ObservableObject {
         isProcessing = true
         defer { isProcessing = false }
 
-        let stored = await MainActor.run {
-            transcriptionService.stop()
-        }
-        let lines = stored.transcriptLines.map {
+        let recordingResult = await transcriptionService.stop()
+        var stored = recordingResult.meeting
+
+        var lines = stored.transcriptLines.map {
             TranscriptLine(
                 id: $0.id,
                 speaker: $0.speaker,
@@ -220,6 +247,34 @@ final class AppState: ObservableObject {
                 isDimmed: $0.isPartial
             )
         }
+
+        var diarizationFailed = false
+
+        if settingsStore.enablePostRecordingDiarization {
+            bannerMessage = "AIで話者を判別しています…（初回はモデルのダウンロードがあります）"
+            do {
+                let refinedLines = try await postRecordingDiarizationService.refineTranscript(
+                    micAudioURL: recordingResult.micAudioURL,
+                    systemAudioURL: recordingResult.systemAudioURL,
+                    usesDualChannel: recordingResult.usesDualChannel,
+                    fallbackLines: lines
+                )
+                lines = refinedLines
+                stored.transcriptLines = refinedLines.map {
+                    StoredTranscriptLine(
+                        id: $0.id,
+                        speakerRaw: $0.speaker.rawValue,
+                        text: $0.text,
+                        isPartial: false
+                    )
+                }
+            } catch {
+                diarizationFailed = true
+                print("Echo: post-recording diarization failed: \(error)")
+            }
+        }
+
+        RecordingFileStore.removeSession(at: recordingResult.sessionDirectory)
 
         let generated = await summaryService.generateSummary(
             from: lines,
@@ -233,10 +288,15 @@ final class AppState: ObservableObject {
 
         meetingStore.saveMeeting(stored)
         selectedMeetingID = stored.id
-        isShowingDetail = true
+        mainWindowScreen = .detail
         selectedTab = .summary
         lastAutoStartedMeetingTitle = nil
-        bannerMessage = "会議を保存し、要約を生成しました。"
+        bannerMessage = diarizationFailed
+            ? "会議を保存しました（話者判別はリアルタイム結果を使用）。"
+            : settingsStore.enablePostRecordingDiarization
+                ? "会議を保存し、AIで話者を判別して要約を生成しました。"
+                : "会議を保存し、要約を生成しました。"
+        NotificationCenter.default.post(name: .echoOpenHistory, object: nil)
     }
 
     func toggleFloatingPanel() {
@@ -251,7 +311,7 @@ final class AppState: ObservableObject {
         meetingStore.deleteMeeting(id: id)
         if selectedMeetingID == id {
             selectedMeetingID = meetingStore.meetings.first?.id
-            isShowingDetail = false
+            mainWindowScreen = meetingStore.meetings.isEmpty ? .home : .history
         }
         bannerMessage = "会議を削除しました。"
     }
@@ -282,6 +342,12 @@ final class AppState: ObservableObject {
             bannerMessage = error.localizedDescription
         }
     }
+}
+
+enum MainWindowScreen: Equatable {
+    case home
+    case history
+    case detail
 }
 
 enum MeetingDetailTab: String, CaseIterable {

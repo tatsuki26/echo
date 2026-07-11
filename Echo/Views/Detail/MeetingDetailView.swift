@@ -19,52 +19,37 @@ struct MeetingDetailView: View {
             footer
         }
         .background(Color.echoBgPanel)
-        .clipShape(RoundedRectangle(cornerRadius: EchoRadius.window, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 30, x: 0, y: 20)
-        .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Button("戻る") {
-                    appState.isShowingDetail = false
-                }
-            }
-            ToolbarItem(placement: .destructiveAction) {
-                Button("削除", role: .destructive) {
-                    appState.deleteMeeting(id: meeting.id)
-                }
-            }
-        }
         .onChange(of: meeting.actionItems) { _, newValue in
             actionItems = newValue
         }
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 3) {
             Text(meeting.title)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Color.echoTextPrimary)
 
             Text("\(meeting.dateRange) · 話者\(meeting.speakerCount)名")
-                .font(.system(size: 11.5))
+                .font(.system(size: 11))
                 .foregroundStyle(Color.echoTextTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 12)
+        .padding(.top, 12)
+        .padding(.bottom, 10)
         .overlay(alignment: .bottom) { EchoDivider() }
     }
 
     private var tabs: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 16) {
             ForEach(MeetingDetailTab.allCases, id: \.self) { tab in
                 Button {
                     appState.selectedTab = tab
                 } label: {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 6) {
                         Text(tab.rawValue)
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(
                                 appState.selectedTab == tab ? Color.echoTextPrimary : Color.echoTextTertiary
                             )
@@ -73,8 +58,8 @@ struct MeetingDetailView: View {
                             .fill(appState.selectedTab == tab ? Color.echoAccent : Color.clear)
                             .frame(height: 2)
                     }
-                    .padding(.top, 10)
-                    .padding(.bottom, 4)
+                    .padding(.top, 8)
+                    .padding(.bottom, 2)
                 }
                 .buttonStyle(.plain)
             }

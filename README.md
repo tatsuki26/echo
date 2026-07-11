@@ -76,6 +76,29 @@ chmod +x scripts/*.sh
 ./scripts/create-dmg.sh
 ```
 
+## ダウンロード版が開けない場合（Gatekeeper）
+
+GitHub からダウンロードしたベータ版は、**Developer ID 署名・公証前**のため macOS に「開発元を確認できない」と表示されることがあります。
+
+### 方法1: 右クリックで開く（推奨）
+
+1. `Echo.app` を Applications にコピー
+2. **右クリック（または Control+クリック）** → **「開く」**
+3. ダイアログで再度 **「開く」**
+
+2回目以降は通常どおり起動できます。
+
+### 方法2: ターミナルで検疫属性を解除
+
+```bash
+xattr -cr /Applications/Echo.app
+open /Applications/Echo.app
+```
+
+### 本番配布について
+
+不特定多数への配布では **Apple Developer Program** への加入と **Developer ID 署名 + 公証** が必要です。手順は [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) を参照してください。
+
 ## ショートカット
 
 | 操作 | ショートカット |

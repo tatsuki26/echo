@@ -2,14 +2,15 @@ import SwiftUI
 
 struct FloatingPanelView: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var transcriptionService: TranscriptionService
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                if appState.isRecording {
+                if transcriptionService.isRecording {
                     HStack(spacing: 6) {
                         RecordingDot()
-                        Text("REC \(appState.recordingDuration)")
+                        Text("REC \(transcriptionService.formattedDuration)")
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Color.echoDanger)
                     }
@@ -21,8 +22,8 @@ struct FloatingPanelView: View {
 
                 Spacer()
 
-                if appState.isRecording {
-                    WaveformIcon(animated: true, targetFPS: 60)
+                if transcriptionService.isRecording {
+                    WaveformIcon(animated: true, targetFPS: 12)
                 }
             }
             .padding(.horizontal, 10)
@@ -31,12 +32,12 @@ struct FloatingPanelView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
-                    let lines = appState.isRecording ? appState.liveTranscriptLines : []
+                    let lines = transcriptionService.isRecording ? transcriptionService.liveLines : []
 
                     if lines.isEmpty {
-                        Text(appState.isRecording
-                             ? (appState.transcriptionService.isCapturingSystemAudio
-                                ? "発言を待機中…（話者A＝自分 / 話者B＝相手）"
+                        Text(transcriptionService.isRecording
+                             ? (transcriptionService.isCapturingSystemAudio
+                                ? "発言を待機中…（A＝自分 / B〜＝参加者）"
                                 : "発言を待機中…")
                              : "文字起こしを開始するとここに表示されます")
                             .font(.system(size: 12.5))
@@ -67,7 +68,7 @@ struct FloatingPanelView: View {
         .clipShape(RoundedRectangle(cornerRadius: EchoRadius.card, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 12)
         .overlay(alignment: .bottom) {
-            if let message = appState.bannerMessage ?? appState.transcriptionService.lastErrorMessage {
+            if let message = appState.bannerMessage ?? transcriptionService.lastErrorMessage {
                 Text(message)
                     .font(.system(size: 10.5))
                     .foregroundStyle(.white)
@@ -103,12 +104,10 @@ struct SpeakerTag: View {
     var body: some View {
         Text(speaker.label)
             .font(.system(size: 10, weight: .bold))
-            .foregroundStyle(speaker == .a ? Color.echoSpeakerA : Color.echoSpeakerB)
+            .foregroundStyle(speaker.color)
             .padding(.horizontal, 6)
             .padding(.vertical, 1)
-            .background(
-                (speaker == .a ? Color.echoSpeakerA : Color.echoSpeakerB).opacity(speaker == .a ? 0.12 : 0.14)
-            )
+            .background(speaker.color.opacity(speaker.isSelf ? 0.12 : 0.14))
             .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
     }
 }
@@ -128,27 +127,10 @@ struct FloatingPanelPreviewContainer: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .overlay {
-                    RadialGradient(
-                        colors: [Color(red: 0.290, green: 0.424, blue: 0.969).opacity(0.8), .clear],
-                        center: UnitPoint(x: 0.3, y: 0.2),
-                        startRadius: 0,
-                        endRadius: 200
-                    )
-                }
-                .overlay {
-                    RadialGradient(
-                        colors: [Color(red: 0.106, green: 0.165, blue: 0.369).opacity(0.9), .clear],
-                        center: UnitPoint(x: 0.8, y: 0.8),
-                        startRadius: 0,
-                        endRadius: 220
-                    )
-                }
                 .frame(height: 340)
 
-            FloatingPanelView()
-                .padding(.top, 20)
-                .padding(.trailing, 20)
+            Text("Floating Panel Preview")
+                .padding()
         }
         .clipShape(RoundedRectangle(cornerRadius: EchoRadius.window, style: .continuous))
     }

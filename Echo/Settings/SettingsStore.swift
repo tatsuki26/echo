@@ -9,8 +9,9 @@ final class SettingsStore: ObservableObject {
 
     @AppStorage("notionDatabaseID") var notionDatabaseID = ""
     @AppStorage("notionTitleProperty") var notionTitleProperty = "Name"
-    @AppStorage("autoStartOnMeetDetection") var autoStartOnMeetDetection = true
+    @AppStorage("autoStartOnMeetDetection") var autoStartOnMeetDetection = false
     @AppStorage("captureSystemAudio") var captureSystemAudio = true
+    @AppStorage("enablePostRecordingDiarization") var enablePostRecordingDiarization = true
     @AppStorage("localeIdentifier") var localeIdentifier = "ja-JP"
 
     @Published var notionToken = ""
