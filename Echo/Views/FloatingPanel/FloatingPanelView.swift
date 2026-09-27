@@ -23,7 +23,7 @@ struct FloatingPanelView: View {
                 Spacer()
 
                 if transcriptionService.isRecording {
-                    WaveformIcon(animated: true, targetFPS: 12)
+                    RecordingInputMeters()
                 }
             }
             .padding(.horizontal, 10)
@@ -68,7 +68,9 @@ struct FloatingPanelView: View {
         .clipShape(RoundedRectangle(cornerRadius: EchoRadius.card, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 12)
         .overlay(alignment: .bottom) {
-            if let message = appState.bannerMessage ?? transcriptionService.lastErrorMessage {
+            if let message = transcriptionService.inputWarning
+                ?? appState.bannerMessage
+                ?? transcriptionService.lastErrorMessage {
                 Text(message)
                     .font(.system(size: 10.5))
                     .foregroundStyle(.white)

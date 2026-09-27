@@ -26,9 +26,21 @@ struct MenuBarDropdownView: View {
                     }
                 }
 
+                if transcriptionService.isRecording {
+                    RecordingInputMeters()
+                        .padding(.vertical, 4)
+                }
+
                 Text(meetingDetector.statusMessage)
                     .font(.system(size: 11.5))
                     .foregroundStyle(Color.echoTextSecondary)
+
+                if transcriptionService.isRecording, let inputWarning = transcriptionService.inputWarning {
+                    Text(inputWarning)
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .foregroundStyle(Color.echoDanger)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 if let bannerMessage = appState.bannerMessage {
                     Text(bannerMessage)
@@ -112,6 +124,32 @@ struct MenuBarDropdownView: View {
     }
 }
 
+/// 録音中に「自分（マイク）」「相手（会議音声）」それぞれの入力レベルを表示する。
+struct RecordingInputMeters: View {
+    @EnvironmentObject private var transcriptionService: TranscriptionService
+
+    var body: some View {
+        HStack(spacing: 12) {
+            meter(title: "自分", channel: .mic, tint: [.echoSpeakerA, .echoSpeakerA])
+            if transcriptionService.isCapturingSystemAudio {
+                meter(title: "相手", channel: .system, tint: [.echoSpeakerB, .echoSpeakerB])
+            }
+        }
+    }
+
+    private func meter(title: String, channel: AudioLevelMeter.Channel, tint: [Color]) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: channel == .mic ? "mic.fill" : "speaker.wave.2.fill")
+                .font(.system(size: 9))
+                .foregroundStyle(Color.echoTextSecondary)
+            Text(title)
+                .font(.system(size: 10.5, weight: .semibold))
+                .foregroundStyle(Color.echoTextSecondary)
+            LiveLevelWaveform(meter: transcriptionService.levelMeter, channel: channel, tint: tint)
+        }
+    }
+}
+
 private struct MenuBarItem: View {
     let title: String
     var shortcut: String?
@@ -149,17 +187,31 @@ struct MenuBarLabelView: View {
     @ObservedObject var iconController: MenuBarIconController
 
     var body: some View {
-        HStack(spacing: 6) {
-            WaveformIcon(
-                animated: iconController.isRecording,
-                externalTime: iconController.isRecording ? iconController.animationTime : 0,
-                targetFPS: 12
-            )
-            .opacity(iconController.isRecording ? 1 : 0.55)
+        HStack(spacing: 5) {
+            if iconController.isRecording {
+                // 録音中は赤丸（警告時はオレンジ）＋実際の入力音量に連動する波形＋経過時間
+                Circle()
+                    .fill(iconController.hasWarning ? Color.orange : Color.echoDanger)
+                    .frame(width: 6, height: 6)
 
-            Text("Echo")
-                .font(.system(size: 12))
-                .foregroundStyle(Color(white: 0.93))
+                WaveformIcon(
+                    levels: iconController.levels,
+                    tint: iconController.hasWarning
+                        ? [.orange, .orange]
+                        : [.echoAccent, .echoAccentTeal]
+                )
+
+                Text(iconController.hasWarning ? "入力なし" : iconController.elapsedText)
+                    .font(.system(size: 12).monospacedDigit())
+                    .foregroundStyle(Color(white: 0.93))
+            } else {
+                WaveformIcon(animated: false, externalTime: 0, targetFPS: 12)
+                    .opacity(0.55)
+
+                Text("Echo")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color(white: 0.93))
+            }
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 2)

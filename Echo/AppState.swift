@@ -51,6 +51,16 @@ final class AppState: ObservableObject {
             }
             .store(in: &cancellables)
 
+        let levelMeter = transcriptionService.levelMeter
+        menuBarIconController.levelSource = { levelMeter.snapshot() }
+
+        transcriptionService.$inputWarning
+            .receive(on: RunLoop.main)
+            .sink { [weak menuBarIconController] warning in
+                menuBarIconController?.setWarning(warning != nil)
+            }
+            .store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -194,7 +204,8 @@ final class AppState: ObservableObject {
     }
 
     func startRecording(title: String, source: String?) async {
-        guard !isRecording else { return }
+        // 停止後の話者判別・要約中に新しい録音を始めると前の会議の保存と競合する
+        guard !isRecording, !isProcessing else { return }
 
         guard await requestPermissionsIfNeeded() else {
             lastAutoStartedMeetingTitle = nil
